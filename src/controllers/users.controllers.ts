@@ -1,7 +1,6 @@
 import { Request, Response } from 'express'
-import databaseService from '../services/database.services'
-import User from '~/models/schemas/User.schema'
 import usersService from '~/services/users.services'
+import crypto, { createHash } from 'crypto'
 
 export const loginController = (req: Request, res: Response) => {
   console.log(req.body)
@@ -11,9 +10,8 @@ export const loginController = (req: Request, res: Response) => {
 }
 
 export const registerController = async (req: Request, res: Response) => {
-  const { email, password } = req.body
   try {
-    const result = await usersService.register({ email, password })
+    const result = await usersService.register(req.body)
     return res.json({
       message: 'Register success',
       result
