@@ -1,6 +1,5 @@
 import { Request, Response } from 'express'
 import usersService from '~/services/users.services'
-import crypto, { createHash } from 'crypto'
 
 export const loginController = (req: Request, res: Response) => {
   console.log(req.body)
