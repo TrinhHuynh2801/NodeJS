@@ -4,7 +4,10 @@ import { hashPassword } from '~/utils/crypto'
 import { RegisterReqBody } from '~/models/schemas/requests/Users.requests'
 import { signToken } from '~/utils/jwt'
 import { TokenType } from '~/constants/enums'
-
+import { RefreshToken } from '~/models/schemas/RefreshToken.schema'
+import { ObjectId } from 'mongodb'
+import { config } from 'dotenv'
+config()
 class UserService {
   private accessToken(user_id: string) {
     return signToken({ user_id, token_type: TokenType.AccessToken }, { expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN })
@@ -28,17 +31,23 @@ class UserService {
     )
     const user_id = result.insertedId.toString()
     const [access_token, refresh_token] = await this.signAccessAndRefreshToken(user_id)
+    await databaseService.refreshTokens.insertOne(
+      new RefreshToken({ user_id: new ObjectId(user_id), token: refresh_token })
+    )
     return { access_token, refresh_token }
   }
   async login(user_id: string) {
     const [access_token, refresh_token] = await this.signAccessAndRefreshToken(user_id)
+    await databaseService.refreshTokens.insertOne(
+      new RefreshToken({ user_id: new ObjectId(user_id), token: refresh_token })
+    )
     return {
       access_token,
       refresh_token
     }
   }
-  async checkEmailExist(email: string) {
-    const result = await databaseService.users.findOne({ email })
+  async checkUserExist(email: string, password?: string) {
+    const result = await databaseService.users.findOne({ email, password })
     return result
   }
 }

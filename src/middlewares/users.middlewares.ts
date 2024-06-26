@@ -3,6 +3,7 @@ import { checkSchema } from 'express-validator'
 import { USERS_MESSAGES } from '~/constants/messages'
 import { ErrorWithStatus } from '~/models/Error'
 import usersService from '~/services/users.services'
+import { hashPassword } from '~/utils/crypto'
 import validate from '~/utils/valiation'
 export const loginValidator = validate(
   checkSchema({
@@ -16,11 +17,11 @@ export const loginValidator = validate(
       trim: true,
       custom: {
         options: async (value, { req }) => {
-          const isExistEmail = await usersService.checkEmailExist(value)
-          if (isExistEmail == null) {
+          const isUserExist = await usersService.checkUserExist(value, hashPassword(req.body.password))
+          if (isUserExist == null) {
             throw new Error(USERS_MESSAGES.USER_NOT_FOUND)
           }
-          req.user = isExistEmail
+          req.user = isUserExist
           return true
         }
       }
@@ -82,7 +83,7 @@ export const registerValidator = validate(
       trim: true,
       custom: {
         options: async (value) => {
-          const isExistEmail = await usersService.checkEmailExist(value)
+          const isExistEmail = await usersService.checkUserExist(value)
           if (isExistEmail) {
             throw new ErrorWithStatus({ message: USERS_MESSAGES.EMAIL_IS_EXIST, status: 401 })
           }
