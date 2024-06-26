@@ -21,3 +21,10 @@ export const registerController = async (req: Request, res: Response) => {
     result
   })
 }
+
+export const logoutController = async (req: Request, res: Response) => {
+  const result = await usersService.logout()
+  return res.json({
+    result
+  })
+}
