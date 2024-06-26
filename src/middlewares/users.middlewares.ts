@@ -81,7 +81,7 @@ export const registerValidator = validate(
           options: async (value) => {
             const isExistEmail = await usersService.checkUserExist(value)
             if (isExistEmail) {
-              throw new ErrorWithStatus({ message: USERS_MESSAGES.EMAIL_IS_EXIST, status: 401 })
+              throw new ErrorWithStatus({ message: USERS_MESSAGES.EMAIL_IS_EXIST, status: HTTP_STATUS.UNAUTHORIZED })
             }
           }
         }
@@ -142,7 +142,7 @@ export const registerValidator = validate(
   )
 )
 
-export const refreshTokenValidator = validate(
+export const accessTokenValidator = validate(
   checkSchema(
     {
       Authorization: {
@@ -157,6 +157,7 @@ export const refreshTokenValidator = validate(
                 message: USERS_MESSAGES.ACCESS_TOKEN_IS_REQUIRED,
                 status: HTTP_STATUS.UNAUTHORIZED
               })
+
             const decoded_authorization = await verifyToken({ token: access_token })
             req.decoded_authorization = decoded_authorization
             return true
@@ -165,5 +166,32 @@ export const refreshTokenValidator = validate(
       }
     },
     ['headers']
+  )
+)
+
+export const refreshTokenValidator = validate(
+  checkSchema(
+    {
+      refresh_token: {
+        notEmpty: {
+          errorMessage: USERS_MESSAGES.REFRESH_TOKEN_IS_REQUIRED
+        },
+        custom: {
+          options: async (value, { req }) => {
+            const [refresh_token, decoded_refresh_token] = await Promise.all([
+              usersService.findRefreshToken(value),
+              verifyToken({ token: value })
+            ])
+            if (!refresh_token)
+              throw new ErrorWithStatus({
+                message: USERS_MESSAGES.USED_REFRESH_TOKEN_OR_NOT_EXIST,
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            req.decoded_refresh_token = decoded_refresh_token
+          }
+        }
+      }
+    },
+    ['body']
   )
 )

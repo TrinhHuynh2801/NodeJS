@@ -47,13 +47,18 @@ class UserService {
       refresh_token
     }
   }
-  async logout() {
+  async logout(refresh_token: string) {
+    await databaseService.refreshTokens.deleteOne({ token: refresh_token })
     return {
       message: USERS_MESSAGES.LOGOUT_SUCCESS
     }
   }
   async checkUserExist(email: string, password?: string) {
     const result = await databaseService.users.findOne({ email, password })
+    return result
+  }
+  async findRefreshToken(token: string) {
+    const result = await databaseService.refreshTokens.findOne({ token })
     return result
   }
 }

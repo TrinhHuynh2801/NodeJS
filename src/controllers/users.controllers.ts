@@ -5,7 +5,7 @@ import User from '~/models/schemas/User.schema'
 import usersService from '~/services/users.services'
 
 export const loginController = async (req: Request, res: Response) => {
-  const user = req.user as User
+  const user = req.user
   const user_id = user._id as ObjectId
   const result = await usersService.login(user_id.toString())
   res.json({
@@ -23,7 +23,8 @@ export const registerController = async (req: Request, res: Response) => {
 }
 
 export const logoutController = async (req: Request, res: Response) => {
-  const result = await usersService.logout()
+  const { refresh_token } = req.body
+  const result = await usersService.logout(refresh_token)
   return res.json({
     result
   })
