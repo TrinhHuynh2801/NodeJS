@@ -37,6 +37,7 @@ class UserService {
     )
     return { access_token, refresh_token }
   }
+
   async login(user_id: string) {
     const [access_token, refresh_token] = await this.signAccessAndRefreshToken(user_id)
     await databaseService.refreshTokens.insertOne(
@@ -53,6 +54,19 @@ class UserService {
       message: USERS_MESSAGES.LOGOUT_SUCCESS
     }
   }
+  async refreshTokenUpdate(user_id: string, token: string) {
+    const [access_token, refresh_token] = await this.signAccessAndRefreshToken(user_id)
+    await databaseService.refreshTokens.deleteOne({ token: token })
+    await databaseService.refreshTokens.insertOne(
+      new RefreshToken({ user_id: new ObjectId(user_id), token: refresh_token })
+    )
+
+    return {
+      access_token,
+      refresh_token
+    }
+  }
+
   async checkUserExist(email: string, password?: string) {
     const result = await databaseService.users.findOne({ email, password })
     return result
