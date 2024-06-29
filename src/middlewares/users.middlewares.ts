@@ -8,6 +8,7 @@ import validate from '~/utils/valiation'
 import { RefreshToken } from '../models/schemas/RefreshToken.schema'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { verifyToken } from '~/utils/jwt'
+import { TokenType } from '~/constants/enums'
 export const loginValidator = validate(
   checkSchema(
     {
@@ -23,7 +24,7 @@ export const loginValidator = validate(
           options: async (value, { req }) => {
             const isUserExist = await usersService.checkUserExist(value, hashPassword(req.body.password))
             if (isUserExist == null) {
-              throw new Error(USERS_MESSAGES.USER_NOT_FOUND)
+              throw new Error(USERS_MESSAGES.INCORRECT_INFO)
             }
             req.user = isUserExist
             return true
@@ -188,6 +189,34 @@ export const refreshTokenValidator = validate(
                 status: HTTP_STATUS.UNAUTHORIZED
               })
             req.decoded_refresh_token = decoded_refresh_token
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)
+
+export const emailVerifyTokenValidator = validate(
+  checkSchema(
+    {
+      email_verify_token: {
+        notEmpty: {
+          errorMessage: USERS_MESSAGES.EMAIL_VERIFY_TOKEN_IS_REQUIRED
+        },
+        custom: {
+          options: async (value, { req }) => {
+            const decoded_email_verify_token = await verifyToken({ token: value })
+
+            if (
+              decoded_email_verify_token === null ||
+              decoded_email_verify_token.token_type != TokenType.EmailVerifyToken
+            )
+              throw new ErrorWithStatus({
+                message: USERS_MESSAGES.USED_REFRESH_TOKEN_OR_NOT_EXIST,
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            req.decoded_email_verify_token = decoded_email_verify_token
           }
         }
       }

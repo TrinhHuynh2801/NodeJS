@@ -1,15 +1,17 @@
 import { Router } from 'express'
 import {
-  RefreshTokenController,
+  emailVerifyTokenController,
   loginController,
   logoutController,
+  refreshTokenController,
   registerController
 } from '~/controllers/users.controllers'
 import {
   registerValidator,
   loginValidator,
   accessTokenValidator,
-  refreshTokenValidator
+  refreshTokenValidator,
+  emailVerifyTokenValidator
 } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '../utils/handlers'
 const usersRouter = Router()
@@ -41,6 +43,8 @@ usersRouter.post('/logout', accessTokenValidator, refreshTokenValidator, wrapReq
 Get New Refresh Token Request
 Body: {refresh_token: string}
 */
-usersRouter.post('/refresh-token', refreshTokenValidator, wrapRequestHandler(RefreshTokenController))
+usersRouter.post('/refresh-token', refreshTokenValidator, wrapRequestHandler(refreshTokenController))
+
+usersRouter.post('/verify-email', emailVerifyTokenValidator, wrapRequestHandler(emailVerifyTokenController))
 
 export default usersRouter
