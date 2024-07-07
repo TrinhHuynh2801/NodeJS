@@ -25,6 +25,14 @@ class UserService {
       { expiresIn: process.env.EMAIL_VERIFY_TOKEN_EXPIRES_IN }
     )
   }
+
+  private forgotPasswordToken(user_id: string) {
+    return signToken(
+      { user_id, token_type: TokenType.ForgotPasswordToken },
+      { expiresIn: process.env.PASSWORD_VERIFY_TOKEN_EXPIRES_IN }
+    )
+  }
+
   private signAccessAndRefreshToken(user_id: string) {
     return Promise.all([this.accessToken(user_id), this.refreshToken(user_id)])
   }
@@ -124,8 +132,36 @@ class UserService {
     }
   }
 
+  async forgotPassword(user_id: string) {
+    const forgot_password_token = await this.forgotPasswordToken(user_id)
+    // Gỉa bộ gửi email
+    console.log('Sending  email: ', forgot_password_token)
+
+    // Cập nhật lại giá trị email_verify_token trong document user
+    await databaseService.users.updateOne(
+      { _id: new ObjectId(user_id) },
+      {
+        $set: {
+          forgot_password_token
+        },
+        $currentDate: {
+          updated_at: true
+        }
+      }
+    )
+    return {
+      message: USERS_MESSAGES.CHECK_EMAIL_TO_RESET_PASSWORD
+    }
+  }
+
   async checkUserExist(email: string, password?: string) {
-    const result = await databaseService.users.findOne({ email, password })
+    const query: { email: string; password?: string } = { email }
+
+    if (password) {
+      query.password = password
+    }
+
+    const result = await databaseService.users.findOne(query)
     console.log(result)
     return result
   }

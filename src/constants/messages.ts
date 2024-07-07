@@ -6,6 +6,7 @@ export const USERS_MESSAGES = {
   EMAIL_IS_REQUIRED: 'Email is required',
   EMAIL_IS_INVALID: 'Email is invalid',
   EMAIL_IS_EXIST: 'A user already exists with this email address',
+  EMAIL_IS_NOT_EXIST: 'User is not exist',
   PASSWORD_IS_REQUIRED: 'Password is required',
   PASSWORD_IS_STRING: 'Password must be a string',
   PASSWORD_LENGTH_6_TO_50: 'Password is between 6 and 50 characters',
@@ -24,5 +25,6 @@ export const USERS_MESSAGES = {
   EMAIL_VERIFY_TOKEN_IS_REQUIRED: 'Email verify token is required',
   EMAIL_ALREADY_VERIFIED_BEFORE: 'Email already verified before',
   EMAIL_VERIFY_SUCCESS: 'Email verify success',
-  RESEND_VERIFY_EMAIL_SUCCESS: 'Resend verify email success'
+  RESEND_VERIFY_EMAIL_SUCCESS: 'Resend verify email success',
+  CHECK_EMAIL_TO_RESET_PASSWORD: 'Check email to reset password'
 } as const

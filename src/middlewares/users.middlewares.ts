@@ -83,6 +83,7 @@ export const registerValidator = validate(
             if (isExistEmail) {
               throw new ErrorWithStatus({ message: USERS_MESSAGES.EMAIL_IS_EXIST, status: HTTP_STATUS.UNAUTHORIZED })
             }
+            return true
           }
         }
       },
@@ -216,6 +217,33 @@ export const emailVerifyTokenValidator = validate(
                 status: HTTP_STATUS.UNAUTHORIZED
               })
             req.decoded_email_verify_token = decoded_email_verify_token
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)
+
+export const forgotPasswordValidator = validate(
+  checkSchema(
+    {
+      email: {
+        notEmpty: {
+          errorMessage: USERS_MESSAGES.EMAIL_IS_REQUIRED
+        },
+        isEmail: {
+          errorMessage: USERS_MESSAGES.EMAIL_IS_INVALID
+        },
+        trim: true,
+        custom: {
+          options: async (value, { req }) => {
+            const user = await usersService.checkUserExist(value)
+            if (user === null) {
+              throw new ErrorWithStatus({ message: USERS_MESSAGES.USER_NOT_FOUND, status: HTTP_STATUS.UNAUTHORIZED })
+            }
+            req.user = user
+            return true
           }
         }
       }
