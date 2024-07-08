@@ -93,7 +93,7 @@ class UserService {
     const [token] = await Promise.all([
       this.signAccessAndRefreshToken(user_id),
       databaseService.users.updateOne(
-        { _id: new ObjectId(user_id) },
+        { _id: new ObjectId(user_id.trim()) },
         {
           $set: {
             email_verify_token: '',
@@ -117,7 +117,7 @@ class UserService {
 
     // Cập nhật lại giá trị email_verify_token trong document user
     await databaseService.users.updateOne(
-      { _id: new ObjectId(user_id) },
+      { _id: new ObjectId(user_id.trim()) },
       {
         $set: {
           email_verify_token
@@ -151,6 +151,24 @@ class UserService {
     )
     return {
       message: USERS_MESSAGES.CHECK_EMAIL_TO_RESET_PASSWORD
+    }
+  }
+
+  async resetPassword(id: string, password: string) {
+    databaseService.users.updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          forgot_password_token: '',
+          password: hashPassword(password)
+        },
+        $currentDate: {
+          updated_at: true
+        }
+      }
+    )
+    return {
+      message: USERS_MESSAGES.RESET_PASSWORD_SUCCESS
     }
   }
 
