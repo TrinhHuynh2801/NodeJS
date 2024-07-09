@@ -3,11 +3,11 @@ import { ObjectId } from 'mongodb'
 import { UserVerifyStatus } from '~/constants/enums'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { USERS_MESSAGES } from '~/constants/messages'
-import { TokenPayload } from '~/models/schemas/requests/Users.requests'
+import { TokenPayload, UpdateReqBody } from '~/models/schemas/requests/Users.requests'
 import User from '~/models/schemas/User.schema'
 import databaseService from '~/services/database.services'
 import usersService from '~/services/users.services'
-
+import { ParamsDictionary } from 'express-serve-static-core'
 export const loginController = async (req: Request, res: Response) => {
   const user = req.user as User
   const user_id = user._id as ObjectId
@@ -98,6 +98,17 @@ export const resetPasswordController = async (req: Request, res: Response) => {
   })
 }
 
+export const updateMeController = async (req: Request, res: Response) => {
+  console.log('update')
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const body = req.body
+  console.log(body)
+  const result = await usersService.updateMe(user_id, body)
+  return res.json({
+    message: USERS_MESSAGES.UPDATE_USER_SUCCESS,
+    result
+  })
+}
 export const getMeController = async (req: Request, res: Response) => {
   const { user_id } = req.decoded_authorization as TokenPayload
   const user = await usersService.getMe(user_id)

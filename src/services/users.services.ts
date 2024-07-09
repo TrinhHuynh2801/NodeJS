@@ -1,7 +1,7 @@
 import User from '~/models/schemas/User.schema'
 import databaseService from './database.services'
 import { hashPassword } from '~/utils/crypto'
-import { RegisterReqBody } from '~/models/schemas/requests/Users.requests'
+import { RegisterReqBody, UpdateReqBody } from '~/models/schemas/requests/Users.requests'
 import { signToken } from '~/utils/jwt'
 import { TokenType, UserVerifyStatus } from '~/constants/enums'
 import { RefreshToken } from '~/models/schemas/RefreshToken.schema'
@@ -183,6 +183,35 @@ class UserService {
       }
     )
     return user
+  }
+
+  async updateMe(user_id: string, body: UpdateReqBody) {
+    const updateBody: { [key: string]: any } = { ...body }
+
+    if (updateBody.date_of_birth) {
+      updateBody.date_of_birth = new Date(updateBody.date_of_birth)
+    }
+
+    const result = await databaseService.users.findOneAndUpdate(
+      {
+        _id: new ObjectId(user_id)
+      },
+      {
+        $set: { ...updateBody },
+        $currentDate: {
+          updated_at: true
+        }
+      },
+      {
+        returnDocument: 'after',
+        projection: {
+          password: 0,
+          email_verify_token: 0,
+          forgot_password_token: 0
+        }
+      }
+    )
+    return result
   }
 
   async checkUserExist(email: string, password?: string) {

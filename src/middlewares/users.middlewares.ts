@@ -7,9 +7,12 @@ import { hashPassword } from '~/utils/crypto'
 import validate from '~/utils/valiation'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { verifyToken } from '~/utils/jwt'
-import { TokenType } from '~/constants/enums'
+import { TokenType, UserVerifyStatus } from '~/constants/enums'
 import databaseService from '~/services/database.services'
 import { ObjectId } from 'mongodb'
+import User from '~/models/schemas/User.schema'
+import { TokenPayload } from '~/models/schemas/requests/Users.requests'
+import { pick } from 'lodash'
 
 const passwordSchema: ParamSchema = {
   notEmpty: {
@@ -41,6 +44,21 @@ const confirmPasswordSchema: ParamSchema = {
       }
       return true
     }
+  }
+}
+
+const imageSchema: ParamSchema = {
+  optional: true,
+  isString: {
+    errorMessage: USERS_MESSAGES.IMAGE_URL_MUST_BE_STRING
+  },
+  trim: true,
+  isLength: {
+    options: {
+      min: 1,
+      max: 400
+    },
+    errorMessage: USERS_MESSAGES.IMAGE_URL_LENGTH
   }
 }
 
@@ -270,3 +288,123 @@ export const resetPasswordValidator = validate(
     ['body']
   )
 )
+
+export const verifiedUserValidator = async (req: Request, res: Response, next: NextFunction) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
+  if (user === null) {
+    return next(
+      new ErrorWithStatus({
+        message: USERS_MESSAGES.USER_NOT_FOUND,
+        status: HTTP_STATUS.UNAUTHORIZED
+      })
+    )
+  }
+  if (user.verify === UserVerifyStatus.Unverified)
+    return next(
+      new ErrorWithStatus({
+        message: USERS_MESSAGES.USER_NOT_VERIFIED,
+        status: HTTP_STATUS.FORBIDEN
+      })
+    )
+  next()
+}
+
+export const updateMeValidator = validate(
+  checkSchema(
+    {
+      name: {
+        optional: true,
+        isString: {
+          errorMessage: USERS_MESSAGES.NAME_IS_STRING
+        },
+        isLength: {
+          options: {
+            min: 1,
+            max: 100
+          },
+          errorMessage: USERS_MESSAGES.NAME_LENGTH_1_TO_100
+        },
+        trim: true
+      },
+      date_of_birth: {
+        isISO8601: {
+          options: {
+            strict: true,
+            strictSeparator: true
+          },
+          errorMessage: USERS_MESSAGES.DATE_OF_BIRTH_MUST_BE_ISO8601
+        },
+
+        optional: true
+      },
+      bio: {
+        optional: true,
+        isString: {
+          errorMessage: USERS_MESSAGES.BIO_MUST_BE_STRING
+        },
+        trim: true,
+        isLength: {
+          options: {
+            min: 1,
+            max: 200
+          },
+          errorMessage: USERS_MESSAGES.BIO_LENGTH
+        }
+      },
+      location: {
+        optional: true,
+        isString: {
+          errorMessage: USERS_MESSAGES.LOCATION_MUST_BE_STRING
+        },
+        trim: true,
+        isLength: {
+          options: {
+            min: 1,
+            max: 200
+          },
+          errorMessage: USERS_MESSAGES.LOCATION_LENGTH
+        }
+      },
+      website: {
+        optional: true,
+        isString: {
+          errorMessage: USERS_MESSAGES.WEBSITE_MUST_BE_STRING
+        },
+        trim: true,
+        isLength: {
+          options: {
+            min: 1,
+            max: 200
+          },
+          errorMessage: USERS_MESSAGES.WEBSITE_LENGTH
+        }
+      },
+      username: {
+        optional: true,
+        isString: {
+          errorMessage: USERS_MESSAGES.USERNAME_MUST_BE_STRING
+        },
+        trim: true,
+
+        isLength: {
+          options: {
+            min: 1,
+            max: 50
+          },
+          errorMessage: USERS_MESSAGES.USERNAME_LENGTH
+        }
+      },
+      avatar: imageSchema,
+      cover_photo: imageSchema
+    },
+    ['body']
+  )
+)
+
+export const filterUpdateReqValidator =
+  <T>(body: Array<keyof T>) =>
+  (req: Request, res: Response, next: NextFunction) => {
+    req.body = pick(req.body, body)
+    next()
+  }

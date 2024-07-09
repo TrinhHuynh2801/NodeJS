@@ -8,6 +8,18 @@ export interface RegisterReqBody {
   confirm_password: string
   date_of_birth: string
 }
+
+export interface UpdateReqBody {
+  name?: string
+  date_of_birth?: string
+  bio?: string
+  location?: string
+  website?: string
+  username?: string
+  avatar?: string
+  cover_photo?: string
+}
+
 export interface TokenPayload extends JwtPayload {
   user_id: string
   token_type: TokenType
