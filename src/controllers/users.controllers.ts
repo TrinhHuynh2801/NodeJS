@@ -99,10 +99,8 @@ export const resetPasswordController = async (req: Request, res: Response) => {
 }
 
 export const updateMeController = async (req: Request, res: Response) => {
-  console.log('update')
   const { user_id } = req.decoded_authorization as TokenPayload
   const body = req.body
-  console.log(body)
   const result = await usersService.updateMe(user_id, body)
   return res.json({
     message: USERS_MESSAGES.UPDATE_USER_SUCCESS,
@@ -114,6 +112,15 @@ export const getMeController = async (req: Request, res: Response) => {
   const user = await usersService.getMe(user_id)
   return res.json({
     message: USERS_MESSAGES.GET_ME_SUCCESS,
+    result: user
+  })
+}
+
+export const getProfileController = async (req: Request, res: Response) => {
+  const { username } = req.params
+  const user = await usersService.getProfile(username)
+  return res.json({
+    message: USERS_MESSAGES.GET_PROFILE_SUCCESS,
     result: user
   })
 }

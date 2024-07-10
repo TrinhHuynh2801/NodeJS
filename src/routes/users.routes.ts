@@ -3,6 +3,7 @@ import {
   emailVerifyTokenController,
   forgotPasswordController,
   getMeController,
+  getProfileController,
   loginController,
   logoutController,
   refreshTokenController,
@@ -114,12 +115,25 @@ usersRouter.patch(
     'bio',
     'location',
     'website',
-    'username',
     'avatar',
     'cover_photo'
   ]),
   updateMeValidator,
   wrapRequestHandler(updateMeController)
 )
+
+/**
+ * Description: Get user profile
+ * Path: /:username
+ * Method: GET
+ */
+usersRouter.get('/:username', wrapRequestHandler(getProfileController))
+
+/**
+ * Description: Follow a user
+ * Path: /follow
+ * Method: POST
+ */
+usersRouter.post('/:username', accessTokenValidator, wrapRequestHandler(getProfileController))
 
 export default usersRouter

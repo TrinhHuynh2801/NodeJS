@@ -8,8 +8,25 @@ import { RefreshToken } from '~/models/schemas/RefreshToken.schema'
 import { ObjectId } from 'mongodb'
 import { config } from 'dotenv'
 import { USERS_MESSAGES } from '~/constants/messages'
+import { ErrorWithStatus } from '~/models/Error'
+import HTTP_STATUS from '~/constants/httpStatus'
 config()
 class UserService {
+  async checkUserExist(email: string, password?: string) {
+    const query: { email: string; password?: string } = { email }
+
+    if (password) {
+      query.password = password
+    }
+
+    const result = await databaseService.users.findOne(query)
+    return result
+  }
+  async findRefreshToken(token: string) {
+    const result = await databaseService.refreshTokens.findOne({ token })
+    return result
+  }
+
   private accessToken(user_id: string) {
     return signToken({ user_id, token_type: TokenType.AccessToken }, { expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN })
   }
@@ -37,15 +54,17 @@ class UserService {
     return Promise.all([this.accessToken(user_id), this.refreshToken(user_id)])
   }
   async register(payload: RegisterReqBody) {
-    const result = await databaseService.users.insertOne(
+    const user_id = new ObjectId()
+    await databaseService.users.insertOne(
       new User({
         ...payload,
+        _id: user_id,
+        username: `${payload.name + user_id.toString()}`,
         date_of_birth: new Date(payload.date_of_birth),
         password: hashPassword(payload.password)
       })
     )
-    const user_id = result.insertedId.toString()
-    const email_verify_token = await this.emailVerifyToken(user_id)
+    const email_verify_token = await this.emailVerifyToken(user_id.toString())
     await databaseService.users.updateOne(
       {
         _id: new ObjectId(user_id)
@@ -53,7 +72,7 @@ class UserService {
       { $set: { email_verify_token: email_verify_token } }
     )
 
-    const [access_token, refresh_token] = await this.signAccessAndRefreshToken(user_id)
+    const [access_token, refresh_token] = await this.signAccessAndRefreshToken(user_id.toString())
     await databaseService.refreshTokens.insertOne(
       new RefreshToken({ user_id: new ObjectId(user_id), token: refresh_token })
     )
@@ -214,20 +233,26 @@ class UserService {
     return result
   }
 
-  async checkUserExist(email: string, password?: string) {
-    const query: { email: string; password?: string } = { email }
-
-    if (password) {
-      query.password = password
-    }
-
-    const result = await databaseService.users.findOne(query)
-    console.log(result)
-    return result
-  }
-  async findRefreshToken(token: string) {
-    const result = await databaseService.refreshTokens.findOne({ token })
-    return result
+  async getProfile(username: string) {
+    const user = await databaseService.users.findOne(
+      { username },
+      {
+        projection: {
+          password: 0,
+          email_verify_token: 0,
+          forgot_password_token: 0,
+          verify: 0,
+          created_at: 0,
+          updated_at: 0
+        }
+      }
+    )
+    if (user === null)
+      throw new ErrorWithStatus({
+        message: USERS_MESSAGES.USER_NOT_FOUND,
+        status: HTTP_STATUS.NOT_FOUND
+      })
+    return user
   }
 }
 const usersService = new UserService()
