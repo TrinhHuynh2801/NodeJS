@@ -152,16 +152,24 @@ export const accessTokenValidator = validate(
         },
         custom: {
           options: async (value, { req }) => {
-            const access_token = value.split(' ')[1]
-            if (!access_token)
+            try {
+              const access_token = value.split(' ')[1]
+              if (!access_token) {
+                throw new ErrorWithStatus({
+                  message: USERS_MESSAGES.ACCESS_TOKEN_IS_REQUIRED,
+                  status: HTTP_STATUS.UNAUTHORIZED
+                })
+              }
+
+              const decoded_authorization = await verifyToken({ token: access_token })
+              req.decoded_authorization = decoded_authorization
+              return true
+            } catch (error) {
               throw new ErrorWithStatus({
-                message: USERS_MESSAGES.ACCESS_TOKEN_IS_REQUIRED,
+                message: USERS_MESSAGES.ACCESS_TOKEN_IS_INVALID,
                 status: HTTP_STATUS.UNAUTHORIZED
               })
-
-            const decoded_authorization = await verifyToken({ token: access_token })
-            req.decoded_authorization = decoded_authorization
-            return true
+            }
           }
         }
       }

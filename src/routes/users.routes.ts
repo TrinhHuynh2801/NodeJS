@@ -2,6 +2,7 @@ import { Router } from 'express'
 import {
   emailVerifyTokenController,
   followController,
+  followingController,
   forgotPasswordController,
   getMeController,
   getProfileController,

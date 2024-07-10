@@ -8,6 +8,7 @@ import User from '~/models/schemas/User.schema'
 import databaseService from '~/services/database.services'
 import usersService from '~/services/users.services'
 import { ParamsDictionary } from 'express-serve-static-core'
+import { ErrorWithStatus } from '~/models/Error'
 export const loginController = async (req: Request, res: Response) => {
   const user = req.user as User
   const user_id = user._id as ObjectId
@@ -131,3 +132,5 @@ export const followController = async (req: Request, res: Response) => {
   const result = await usersService.follow(user_id, followed_user_id)
   return res.json(result)
 }
+
+export const followingController = async (req: Request, res: Response) => {}

@@ -248,11 +248,12 @@ class UserService {
         }
       }
     )
-    if (user === null)
-      throw new ErrorWithStatus({
+    if (user === null) {
+      return new ErrorWithStatus({
         message: USERS_MESSAGES.USER_NOT_FOUND,
         status: HTTP_STATUS.NOT_FOUND
       })
+    }
     return user
   }
   async follow(user_id: string, followed_user_id: string) {
@@ -272,6 +273,8 @@ class UserService {
       message: USERS_MESSAGES.FOLLOWED
     }
   }
+
+  async following(user_id: string) {}
 }
 const usersService = new UserService()
 export default usersService
