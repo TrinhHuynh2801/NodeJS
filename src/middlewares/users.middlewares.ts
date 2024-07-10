@@ -408,3 +408,27 @@ export const filterUpdateReqValidator =
     req.body = pick(req.body, body)
     next()
   }
+
+export const followUserValidator = validate(
+  checkSchema(
+    {
+      followed_user_id: {
+        custom: {
+          options: async (value: string) => {
+            const follower = await databaseService.users.findOne({
+              _id: new ObjectId(value)
+            })
+            if (follower === null) {
+              throw new ErrorWithStatus({
+                message: USERS_MESSAGES.USER_NOT_FOUND,
+                status: HTTP_STATUS.NOT_FOUND
+              })
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)
