@@ -440,3 +440,49 @@ export const followUserValidator = validate(
     ['body']
   )
 )
+
+export const followingValidator = validate(
+  checkSchema(
+    {
+      user_id: {
+        notEmpty: {
+          errorMessage: USERS_MESSAGES.USER_ID_IS_REQUIRED
+        },
+        custom: {
+          options: async (value: string, { req }) => {
+            const user = await databaseService.users.findOne({ _id: new ObjectId(value) })
+            if (user === null) {
+              throw new ErrorWithStatus({ message: USERS_MESSAGES.USER_NOT_FOUND, status: HTTP_STATUS.UNAUTHORIZED })
+            }
+            req.user = user
+            return true
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)
+
+export const followerValidator = validate(
+  checkSchema(
+    {
+      followed_user_id: {
+        notEmpty: {
+          errorMessage: USERS_MESSAGES.USER_ID_IS_REQUIRED
+        },
+        custom: {
+          options: async (value: string, { req }) => {
+            const user = await databaseService.users.findOne({ _id: new ObjectId(value) })
+            if (user === null) {
+              throw new ErrorWithStatus({ message: USERS_MESSAGES.USER_NOT_FOUND, status: HTTP_STATUS.UNAUTHORIZED })
+            }
+            req.user = user
+            return true
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)

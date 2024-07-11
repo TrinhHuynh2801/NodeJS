@@ -129,8 +129,26 @@ export const getProfileController = async (req: Request, res: Response) => {
 export const followController = async (req: Request, res: Response) => {
   const { user_id } = req.decoded_authorization as TokenPayload
   const { followed_user_id } = req.body
+  if (user_id === followed_user_id)
+    return res.json({
+      message: USERS_MESSAGES.CANNOT_FOLLOW_YOURSELF
+    })
   const result = await usersService.follow(user_id, followed_user_id)
   return res.json(result)
 }
 
-export const followingController = async (req: Request, res: Response) => {}
+export const followingController = async (req: Request, res: Response) => {
+  const { _id } = req.user as User
+  const result = await usersService.following((_id as ObjectId).toString())
+  return res.json({
+    result
+  })
+}
+
+export const followerController = async (req: Request, res: Response) => {
+  const { _id } = req.user as User
+  const result = await usersService.follower((_id as ObjectId).toString())
+  return res.json({
+    result
+  })
+}

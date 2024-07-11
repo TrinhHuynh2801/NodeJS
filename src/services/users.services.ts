@@ -274,7 +274,23 @@ class UserService {
     }
   }
 
-  async following(user_id: string) {}
+  async following(user_id: string) {
+    const cursor = databaseService.followers
+      .find({ user_id: new ObjectId(user_id) })
+      .project({ followed_user_id: 1, _id: 0 })
+    const users = await cursor.toArray()
+    const followedUserIds = users.map((user) => user.followed_user_id)
+    return followedUserIds
+  }
+
+  async follower(user_id: string) {
+    const cursor = databaseService.followers
+      .find({ followed_user_id: new ObjectId(user_id) })
+      .project({ user_id: 1, _id: 0 })
+    const users = await cursor.toArray()
+    const followUserIds = users.map((user) => user.user_id)
+    return followUserIds
+  }
 }
 const usersService = new UserService()
 export default usersService
