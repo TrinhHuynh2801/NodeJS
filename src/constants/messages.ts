@@ -55,5 +55,7 @@ export const USERS_MESSAGES = {
   CANNOT_UNFOLLOW_YOURSELF: 'Cannot unfollow yourself',
   USERNAME_IS_EXIST: 'Username is exist',
   UNFOLLOW_SUCCESS: 'unfollow user success',
-  NOT_FOLLOW: 'You are not follow this user'
+  NOT_FOLLOW: 'You are not follow this user',
+  CHANGE_PASSWORD_SUCCESS: 'Change password success',
+  OLD_PASSWORD_NOT_MATCH: 'Old password not match'
 } as const

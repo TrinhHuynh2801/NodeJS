@@ -163,3 +163,10 @@ export const followerController = async (req: Request, res: Response) => {
     result
   })
 }
+
+export const changePasswordController = async (req: Request, res: Response) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const { password } = req.body
+  const result = await usersService.changePassword(user_id, password)
+  return res.json(result)
+}

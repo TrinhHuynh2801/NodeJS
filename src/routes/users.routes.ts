@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import {
+  changePasswordController,
   emailVerifyTokenController,
   followController,
   followerController,
@@ -28,7 +29,8 @@ import {
   updateMeValidator,
   filterUpdateReqValidator,
   followingValidator,
-  followerValidator
+  followerValidator,
+  changePasswordValidator
 } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '../utils/handlers'
 import { UpdateReqBody } from '~/models/schemas/requests/Users.requests'
@@ -111,7 +113,7 @@ usersRouter.get('/me', accessTokenValidator, wrapRequestHandler(getMeController)
  * Header: { Authorization: Bearer <access_token> }
  * Body: UserSchema
  */
-usersRouter.patch(
+usersRouter.put(
   '/me',
   accessTokenValidator,
   verifiedUserValidator,
@@ -164,10 +166,24 @@ usersRouter.get('/following', followingValidator, wrapRequestHandler(followingCo
 usersRouter.get('/followers', followerValidator, wrapRequestHandler(followerController))
 
 /**
+ * Description: Change password
+ * Path: /change-password
+ * Method: PUT
+ * Header: { Authorization: Bearer <access_token> }
+ * Body: { old_password: string, password: string, confirm_password: string }
+ */
+usersRouter.put(
+  '/change-password',
+  accessTokenValidator,
+  verifiedUserValidator,
+  changePasswordValidator,
+  wrapRequestHandler(changePasswordController)
+)
+
+/**
  * Description: Get user profile
  * Path: /:username
  * Method: GET
  */
 usersRouter.get('/:username', wrapRequestHandler(getProfileController))
-
 export default usersRouter
