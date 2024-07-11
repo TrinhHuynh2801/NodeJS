@@ -401,6 +401,19 @@ export const updateMeValidator = validate(
             max: 50
           },
           errorMessage: USERS_MESSAGES.USERNAME_LENGTH
+        },
+        custom: {
+          options: async (value: string) => {
+            const result = await databaseService.users.findOne({
+              username: value
+            })
+            if (result) {
+              throw new ErrorWithStatus({
+                message: USERS_MESSAGES.USERNAME_IS_EXIST,
+                status: HTTP_STATUS.FORBIDEN
+              })
+            }
+          }
         }
       },
       avatar: imageSchema,

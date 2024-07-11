@@ -13,6 +13,7 @@ import {
   registerController,
   resendVerifyEmailController,
   resetPasswordController,
+  unfollowController,
   updateMeController
 } from '~/controllers/users.controllers'
 import {
@@ -121,13 +122,30 @@ usersRouter.patch(
     'location',
     'website',
     'avatar',
-    'cover_photo'
+    'cover_photo',
+    'username'
   ]),
   updateMeValidator,
   wrapRequestHandler(updateMeController)
 )
 
+/**
+ * Description: User follow another user
+ * Path: /follow
+ * Method: POST
+ * Header: { Authorization: Bearer <access_token> }
+ * Body: followed_user_id
+ */
 usersRouter.post('/follow', accessTokenValidator, wrapRequestHandler(followController))
+
+/**
+ * Description: User unfollow another user
+ * Path: /follow
+ * Method: DELETE
+ * Header: { Authorization: Bearer <access_token> }
+ * Body: followed_user_id
+ */
+usersRouter.delete('/follow', accessTokenValidator, wrapRequestHandler(unfollowController))
 
 /**
  * Description: List of users someone following
